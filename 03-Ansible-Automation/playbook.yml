@@ -1,0 +1,28 @@
+---
+- name: Basic Linux Automation with Ansible
+  hosts: webservers
+  become: yes
+
+  tasks:
+    - name: Install Apache (httpd/nginx based on OS)
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install tree command
+      package:
+        name: tree
+        state: present
+
+    - name: Create a new user 'devopsuser'
+      user:
+        name: devopsuser
+        state: present
+        shell: /bin/bash
+
+    - name: Ensure devopsuser has sudo privileges
+      lineinfile:
+        dest: /etc/sudoers
+        line: 'devopsuser ALL=(ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
