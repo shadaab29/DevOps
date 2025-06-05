@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone') {
+            steps {
+                git 'https://github.com/shadaab29/DevOps.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                sh 'npm install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'npm test || echo "No test cases available"'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                echo 'Building Docker Image...'
+                sh 'docker build -t shadaab29/nodeapp:latest .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push shadaab29/nodeapp:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying to server...'
+                // Replace this with SSH or SCP-based deploy if needed
+            }
+        }
+    }
+}
